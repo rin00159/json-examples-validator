@@ -21,6 +21,34 @@ examples/<major>/<minor>/<SubexT>[_defs-<DeF>].json-examples.json
 npx json-examples-validator . --verbose
 ```
 
+### CLI Options
+
+Run `npx json-examples-validator --help` to see all available options:
+
+```
+Usage: json-examples-validator <library root> [options]
+
+Validates examples/<major>/<minor>/<SubexT>[_defs-<DeF>].json-examples.json against schema/<major>.<minor>.<patch>/.
+
+      --version <semver>                          schema version or semver range (repeatable, comma-separated; default: highest patch)
+      --profile <list>                            comma separated: annotation, assertion, format-assert-full, format-assert-fast (default: all)
+      --formats-mode <fast|full>                  ajv-formats mode for "assertion" (default: full)
+      --exact-errors                              the number of errors must equal expectedErrors.length
+      --include-dot-dirs                          also read dot-directories below schema/<version>
+      --include-dot-dir <n>                       ... only this one (repeatable)
+      --report                                    instead of running: show examples whose result depends on format handling or whose valid* keys are wrong, with the keys to write (exit 1 on a mismatch)
+      --report-all                                like --report, but list every example
+      --check-wrappers                            also validate every examples file against its examples/<M>/<m>/schema/*.json-examples.schema.json
+      --ref-map <url=path>                        resolve a wrapper's remote $ref from a local file (repeatable)
+      --require-expected-errors <off|warn|error>  invalid examples without expectedErrors (default: warn)
+      --offline                                   never fetch remote $refs (they must be given with --ref-map)
+      --verbose                                   print every example
+  -h, --help                                      show this help
+```
+
+Options can also be specified in `<root>/json-examples-validator.config.json` using camelCase keys (e.g. `formatsMode`, `exactErrors`), plus `skip` rules and `ajvOptions`. The configuration file is strictly validated against a JSON Schema at runtime.
+
+
 vitest (top-level `await`, one test per example and profile):
 
 ```ts
