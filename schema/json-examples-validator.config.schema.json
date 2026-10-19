@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://raw.githubusercontent.com/rin00159/json-examples-validator/refs/heads/main/schema/json-examples-validator.config.schema.json",
+	"$id": "https://raw.githubusercontent.com/rin00159/json-examples-validator/refs/heads/main/schema/0.0.0/json-examples-validator.config.schema.json",
 	"title": "JSON Examples Validator Configuration Schema",
 	"description": "Configuration schema for json-examples-validator (json-examples-validator.config.json)",
 	"type": "object",
