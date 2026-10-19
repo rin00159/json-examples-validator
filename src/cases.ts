@@ -43,7 +43,7 @@ const SCENARIOS: Array<{ name: string; profile: Profile; mode: 'fast' | 'full' }
 /** Turn every example of the library into a runnable case (one per example and profile). */
 export async function loadCases(options: ValidatorOptions): Promise<LoadedCases> {
   const { root, profiles = ALL_PROFILES, formatsMode = 'full', ajvOptions = {}, skip = [], exactErrors = false, requireExpectedErrors = 'warn' } = options;
-  const { sources, problems } = await discoverExamples(root, { version: options.version, allPatches: options.allPatches, includeDotDirs: options.includeDotDirs });
+  const { sources, problems } = await discoverExamples(root, { version: options.version, includeDotDirs: options.includeDotDirs });
   const warnings: string[] = [];
   const cases: ExampleCase[] = [];
   const engines = new Map<string, Promise<Engine>>();

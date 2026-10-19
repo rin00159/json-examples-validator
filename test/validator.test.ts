@@ -122,17 +122,27 @@ describe('runExamples: discovery problems', () => {
     expect(problems.join('\n')).toMatch(/valid must be a boolean/);
     expect(problems.join('\n')).toMatch(/examples\/9\/9\/main.*no schema\/9\.9\./);
 
-    // a newer patch wins by default, --all-patches runs both
+    // a newer patch wins by default, version: ['*'] runs both
     await mkdir(join(root, 'schema/0.1.1'), { recursive: true });
     await writeFile(join(root, 'schema/0.1.1/main.schema.json'), JSON.stringify({ $id: 'https://example.test/other/0.1.1/main.schema.json', type: 'string' }));
     await examples([{ group: 'basic', valid: true, instance: 'text' }]);
     const latest = await runExamples({ root, profiles: ['annotation'] });
     expect(latest.failed).toEqual([]);
     expect(latest.passed).toBe(1);
-    const all = await runExamples({ root, profiles: ['annotation'], allPatches: true });
+    const all = await runExamples({ root, profiles: ['annotation'], version: ['*'] });
     expect(all.failed).toHaveLength(1); // 0.1.0 expects an object
-    const pinned = await runExamples({ root, profiles: ['annotation'], version: '0.1.0' });
+    const pinned = await runExamples({ root, profiles: ['annotation'], version: ['0.1.0'] });
     expect(pinned.failed).toHaveLength(1);
+    const pinnedRange = await runExamples({ root, profiles: ['annotation'], version: ['^0.1.1'] });
+    expect(pinnedRange.failed).toEqual([]);
+    expect(pinnedRange.passed).toBe(1);
+
+    // invalid semver or source specifier is reported as problem
+    const badSemver = await runExamples({ root, version: ['not-a-version'] });
+    expect(badSemver.problems.join('\n')).toMatch(/not a valid node-semver/);
+
+    const badSource = await runExamples({ root, version: ['git+https://github.com/foo/bar', 'npm:foo@1.0.0'] });
+    expect(badSource.problems.join('\n')).toMatch(/must not include source specifiers/);
   });
 
   it('reads json-examples-validator.config.json and lets options override it', async () => {

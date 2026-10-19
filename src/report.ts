@@ -45,7 +45,7 @@ export function suggestDeclaration(r: Pick<ScenarioResults, 'annotation' | 'asse
  */
 export async function buildReport(options: ValidatorOptions & { all?: boolean }): Promise<{ items: ReportItem[]; problems: string[] }> {
   const opts = { ...(await resolveOptions(options)), all: options.all };
-  const { sources, problems } = await discoverExamples(opts.root, { version: opts.version, allPatches: opts.allPatches, includeDotDirs: opts.includeDotDirs });
+  const { sources, problems } = await discoverExamples(opts.root, { version: opts.version, includeDotDirs: opts.includeDotDirs });
   const items: ReportItem[] = [];
   const base = { ajvOptions: opts.ajvOptions ?? {}, includeDotDirs: opts.includeDotDirs, refMap: absRefMap(opts), offline: opts.offline };
 

@@ -9,8 +9,7 @@ const HELP = `Usage: json-examples-validator <library root> [options]
 
 Validates examples/<major>/<minor>/<SubexT>[_defs-<DeF>].json-examples.json against schema/<major>.<minor>.<patch>/.
 
-      --version <x.y.z>      only this schema version
-      --all-patches          every patch version of a major.minor (default: the highest)
+      --version <semver>     schema version or semver range (repeatable, comma-separated; default: highest patch)
       --profile <list>       comma separated: ${ALL_PROFILES.join(', ')} (default: all)
       --formats-mode <fast|full>   ajv-formats mode for "assertion" (default: full)
       --exact-errors         the number of errors must equal expectedErrors.length
@@ -32,8 +31,7 @@ async function main(): Promise<number> {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      version: { type: 'string' },
-      'all-patches': { type: 'boolean' },
+      version: { type: 'string', multiple: true },
       profile: { type: 'string' },
       'formats-mode': { type: 'string' },
       'exact-errors': { type: 'boolean' },
@@ -65,10 +63,11 @@ async function main(): Promise<number> {
   const requireExpectedErrors = values['require-expected-errors'] as 'off' | 'warn' | 'error' | undefined;
   if (requireExpectedErrors && !['off', 'warn', 'error'].includes(requireExpectedErrors)) throw new Error('--require-expected-errors must be off, warn or error');
   const refMap = values['ref-map'] ? Object.fromEntries(values['ref-map'].map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)])) : undefined;
+  const rawVersion = values.version;
+  const version = rawVersion ? rawVersion.flatMap((v) => v.split(',')).map((s) => s.trim()).filter(Boolean) : undefined;
   const common = {
     root,
-    version: values.version,
-    allPatches: values['all-patches'],
+    version,
     profiles,
     formatsMode: values['formats-mode'] as 'fast' | 'full' | undefined,
     includeDotDirs: values['include-dot-dirs'] ? true : values['include-dot-dir'],

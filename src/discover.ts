@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import semver from 'semver';
 import { findSchemaFiles, toPosix as posixPath, VERSION_DIR } from 'jsonschema-lib-layout';
 import type { IncludeDotDirs } from 'jsonschema-lib-layout';
 
@@ -27,23 +28,50 @@ const cmpVersion = (a: string, b: string) => {
   return (x[2] ?? 0) - (y[2] ?? 0);
 };
 
+/** Validates that a version specifier is a valid node-semver specifier without source specifiers (no URLs, git, file, npm:). */
+export function validateSemverSpec(spec: string): string | null {
+  if (typeof spec !== 'string') return 'version specifier must be a string';
+  if (spec.includes(':') || spec.includes('/')) {
+    return `version specifier "${spec}" must not include source specifiers (URLs, file paths, npm: prefixes, etc.)`;
+  }
+  if (!semver.validRange(spec)) {
+    return `version specifier "${spec}" is not a valid node-semver version or range`;
+  }
+  return null;
+}
+
 /** examples/<major>/<minor>/<SubexT>[_defs-<DeF>].json-examples.json -> the schema file it targets. */
-export async function discoverExamples(root: string, opts: { version?: string; allPatches?: boolean; includeDotDirs?: IncludeDotDirs } = {}): Promise<{ sources: ExampleSource[]; problems: string[] }> {
+export async function discoverExamples(root: string, opts: { version?: string[]; includeDotDirs?: IncludeDotDirs } = {}): Promise<{ sources: ExampleSource[]; problems: string[] }> {
   const sources: ExampleSource[] = [];
   const problems: string[] = [];
   const schemaRoot = join(root, 'schema');
   const versions = (await dirs(schemaRoot)).filter((v) => VERSION_DIR.test(v));
   const filesOf = new Map<string, string[]>();
 
+  if (opts.version) {
+    for (const spec of opts.version) {
+      const err = validateSemverSpec(spec);
+      if (err) problems.push(err);
+    }
+  }
+
   for (const major of (await dirs(join(root, 'examples'))).filter((d) => /^\d+$/.test(d))) {
     for (const minor of (await dirs(join(root, 'examples', major))).filter((d) => /^\d+$/.test(d))) {
       const exDir = join(root, 'examples', major, minor);
       const candidates = versions.filter((v) => v.startsWith(`${major}.${minor}.`)).sort(cmpVersion);
-      const chosen = opts.version ? candidates.filter((v) => v === opts.version) : opts.allPatches ? candidates : candidates.slice(-1);
+
       if (opts.version) {
-        const [vMajor, vMinor] = opts.version.split('.');
-        if (vMajor !== major || vMinor !== minor) continue;
+        const minorRange = `${major}.${minor}.x`;
+        const intersectsMinor = opts.version.some((spec) => {
+          if (!semver.validRange(spec)) return false;
+          return semver.intersects(minorRange, spec);
+        });
+        if (!intersectsMinor) continue;
       }
+
+      const chosen = opts.version
+        ? candidates.filter((v) => opts.version!.some((spec) => semver.validRange(spec) && semver.satisfies(v, spec)))
+        : candidates.slice(-1);
 
       for (const name of (await readdir(exDir)).sort()) {
         const m = EXAMPLES_FILE.exec(name);
@@ -53,7 +81,7 @@ export async function discoverExamples(root: string, opts: { version?: string; a
         }
         const examplesFile = posixPath(relative(root, join(exDir, name)));
         if (chosen.length === 0) {
-          problems.push(`${examplesFile}: no schema/${major}.${minor}.* directory${opts.version ? ` equal to ${opts.version}` : ''}`);
+          problems.push(`${examplesFile}: no schema/${major}.${minor}.* directory${opts.version ? ` matching ${opts.version.join(', ')}` : ''}`);
           continue;
         }
         for (const version of chosen) {

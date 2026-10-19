@@ -58,12 +58,14 @@ export interface SkipRule {
 export interface ValidatorOptions {
   /** The JSON Schema library root (contains `schema/` and `examples/`). */
   root: string;
-  /** Only this schema version, e.g. `0.0.0` (examples/0/0 against schema/0.0.0). */
-  version?: string;
+  /**
+   * Schema versions to run against, specified as node-semver version or range strings without source specifiers
+   * (e.g. `['0.0.0']`, `['^1.0.0']`, `['*']`).
+   * When omitted, defaults to the highest patch version of each major.minor.
+   */
+  version?: string[];
   /** Default: all four. A profile whose directory does not exist is reported as skipped. */
   profiles?: readonly Profile[];
-  /** Run against every patch version of a major.minor instead of the highest one. */
-  allPatches?: boolean;
   /** Require the actual error count to equal `expectedErrors.length` (default: expected errors must be a subset). */
   exactErrors?: boolean;
   /** ajv-formats mode for the `assertion` profile. Default `full`. */

@@ -38,7 +38,7 @@ function rewriteRefs(node: unknown, wrapperDir: string, idOfPath: Map<string, st
  */
 export async function checkWrappers(options: ValidatorOptions): Promise<string[]> {
   const opts = await resolveOptions(options);
-  const { sources, problems } = await discoverExamples(opts.root, { version: opts.version, allPatches: opts.allPatches, includeDotDirs: opts.includeDotDirs });
+  const { sources, problems } = await discoverExamples(opts.root, { version: opts.version, includeDotDirs: opts.includeDotDirs });
   const found: string[] = [];
   const refMap = absRefMap(opts);
 

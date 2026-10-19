@@ -1,0 +1,108 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://raw.githubusercontent.com/rin00159/json-examples-validator/refs/heads/main/schema/json-examples-validator.config.schema.json",
+	"title": "JSON Examples Validator Configuration Schema",
+	"description": "Configuration schema for json-examples-validator (json-examples-validator.config.json)",
+	"type": "object",
+	"unevaluatedProperties": false,
+	"properties": {
+		"$schema": {
+			"type": "string",
+			"format": "uri-reference"
+		},
+		"version": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"not": {
+					"pattern": "[:/]"
+				},
+				"description": "node-semver version or range specification without source specifiers (e.g. '0.0.0', '^1.0.0', '*')"
+			},
+			"description": "Schema versions to run against, specified as node-semver version or range strings without source specifiers. If omitted, defaults to the highest patch version of each major.minor."
+		},
+		"profiles": {
+			"type": "array",
+			"items": {
+				"enum": [
+					"annotation",
+					"assertion",
+					"format-assert-full",
+					"format-assert-fast"
+				]
+			},
+			"description": "Profiles to evaluate. Default: all four."
+		},
+		"formatsMode": {
+			"enum": ["fast", "full"],
+			"default": "full",
+			"description": "ajv-formats mode for the assertion profile."
+		},
+		"exactErrors": {
+			"type": "boolean",
+			"description": "Require the actual error count to equal expectedErrors.length."
+		},
+		"requireExpectedErrors": {
+			"enum": ["off", "warn", "error"],
+			"default": "warn",
+			"description": "Behavior when an invalid example has no matching expectedErrors."
+		},
+		"checkWrappers": {
+			"type": "boolean",
+			"description": "Also validate every examples file against its wrapper schema."
+		},
+		"refMap": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "string"
+			},
+			"description": "Map remote $ref / $schema URLs to local files relative to root."
+		},
+		"offline": {
+			"type": "boolean",
+			"description": "Never use the network for remote $refs."
+		},
+		"includeDotDirs": {
+			"oneOf": [
+				{ "type": "boolean" },
+				{ "type": "array", "items": { "type": "string" } }
+			],
+			"description": "Read dot-directories below schema/<version> too."
+		},
+		"skip": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["reason"],
+				"properties": {
+					"profile": {
+						"enum": [
+							"annotation",
+							"assertion",
+							"format-assert-full",
+							"format-assert-fast"
+						]
+					},
+					"file": {
+						"type": "string",
+						"description": "Substring of the examples file path."
+					},
+					"label": {
+						"type": "string",
+						"description": "Exact label (or name) of the example."
+					},
+					"index": {
+						"type": "integer",
+						"minimum": 0,
+						"description": "Index in jsons."
+					},
+					"reason": {
+						"type": "string",
+						"description": "Why the example is skipped."
+					}
+				},
+				"unevaluatedProperties": false
+			}
+		}
+	}
+}

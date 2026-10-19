@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://raw.githubusercontent.com/rin00159/json-examples-schema/refs/heads/main/schema/0.0.0/json-examples.schema.json/ff",
+	"title": "JSON Examples - Schema",
+	"description": "JSON Schema の example を、期待するバリデーション結果とともに記述するファイル形式",
+	"$ref": "https://raw.githubusercontent.com/rin00159/json-examples-schema/refs/heads/main/schema/0.0.0/json-examples.schema.json",
+	"$vocabulary": {
+		"https://json-schema.org/draft/2020-12/vocab/format-assertion": true
+	},
+	"type": "object",
+	"properties": {
+		"engine": {
+			"properties": {
+				"options": {
+					"type": "object",
+					"$ref": "./json-examples-validator.config.schema.json"
+				}
+			}
+		}
+	}
+}
