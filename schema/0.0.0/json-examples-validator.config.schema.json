@@ -14,9 +14,7 @@
 			"type": "array",
 			"items": {
 				"type": "string",
-				"not": {
-					"pattern": "[:/]"
-				},
+				"pattern": "^(?![:/])[0-9A-Za-z.><=~^|\\s\\-+*]+$",
 				"description": "node-semver version or range specification without source specifiers (e.g. '0.0.0', '^1.0.0', '*')"
 			},
 			"description": "Schema versions to run against, specified as node-semver version or range strings without source specifiers. If omitted, defaults to the highest patch version of each major.minor."
